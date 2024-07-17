@@ -1,0 +1,42 @@
+nIter = length(allHistoryCor);
+allBestCor = zeros(1,nIter);
+for i=1:nIter
+    tBest = allHistoryCor{i};
+    tBest = tBest(end);
+    allBestCor(i) = tBest;
+end
+[allBestCorSorted allBestCorInd] = sort(allBestCor,'descend');
+allBestCorSorted(1)
+% allHistoryCor{allBestCorInd(1)}
+allBestSet{allBestCorInd(1)}
+% allOption{allBestCorInd(1)}.Res
+% allOption{allBestCorInd(1)}.Des
+
+allBestCorWithoutTiedrank = [];
+for i=1:nIter
+    if strcmp(allOption(i).Res.Pre,'Tiedrank') ||  strcmp(allOption(i).Des.Pre,'Tiedrank')
+        continue;
+    end
+    tBest = allHistoryCor{i};
+    tBest = tBest(end);
+    allBestCorWithoutTiedrank = [allBestCorWithoutTiedrank tBest];
+end
+[allBestCorSorted2 allBestCorInd2] = sort(allBestCorWithoutTiedrank,'descend');
+allBestCorSorted2(1)
+allBestCorInd(1)
+allHistoryCor{allBestCorInd2(1)}
+allBestSet{allBestCorInd(1)}
+allOption{allBestCorInd(1)}.Res
+allOption{allBestCorInd(1)}.Des
+% best = -inf;
+% bestI = [];
+% for i=1:576
+%     tCor = allHistoryCor{i};
+%     tBest = tCor(end);
+%     if tBest>best
+%         best = tBest;
+%         bestI = i;
+%     end
+% end
+% best
+% bestI

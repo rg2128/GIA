@@ -1,0 +1,85 @@
+function SimMatrix=CountClusterNumbers()
+%%
+load('L:\Lab Member data files\Qiang\bulb imaging\GIAProccessed\GIA6\10-1 10-2 10-3\Project.mat','Data')
+thresholds = [0.2 0.6];
+option = 2;
+
+%% get peak information   
+Peak=permute(Data.Sort.Peak,[2 1 3]); %obtain data
+%make odor/conc into a single dimension, so rows are glomeruli
+Peak=Peak(:,:);                         
+
+%% compute pairwise distance
+switch option
+    case 1
+        YD=pdist(Peak,'euclidean'); %calculating using Euclidean Distance
+        PlotTitle='Euclidean Distance Similarity Plot';
+    case 2
+        %Calculating with NormDotProduct
+        % simplified by elden here
+        YD=pdist(Peak,'cosine');
+        PlotTitle='Cosine Similarity Plot';
+    case 3
+        %calculating using ranked response
+        zPeak=normr(Peak);
+        zRank=tiedrank(zPeak);
+        YD=pdist(zRank,'euclidean');
+        PlotTitle='Ranked Response Similarity Plot';
+end
+
+%% linkage
+ZYD=linkage(YD,'complete');
+
+
+for i=1:length(thresholds)
+    T = CLUSTER(ZYD,'Cutoff',thresholds(i),'criterion',); 
+     
+    [hden, T] = dendrogram(ZYD, 0, 'colorthreshold', thresholds(i),'labels',num2str(sort(Data.Sort.vGlom)));
+    set(hden,'LineWidth',2);
+end
+
+    
+%% prepare plot 3         
+% Plot Font Size Settings
+tFS=15;     % Title font size
+xFS=20;     % Y axis font size
+yFS=20;     % X axis font size
+MS=300;      % Marker Size       
+%set ROI indices     
+Lx=cell2mat(M.Project.ROI(3));              % X pixel #
+Ly=cell2mat(M.Project.ROI(4));              % Y pixel #
+SF=cell2mat(M.Project.ROI(5));              % Scaling Factor(um/pixel)
+S=ones(G,1)*MS;       % Marker Size vector                       
+X=linspace(0,(Lx-1)*SF,Lx);                 % X axis length vector
+Y=linspace(0,(Ly-1)*SF,Ly);                 % Y axis length vector
+ROI = ROI2apml(M.Data.ROI,M.Project.ROI);
+ROIx=SF*ROI(M.Data.Sort.vGlom,1);              % Sorted ROI x coordinates
+ROIy=SF*ROI(M.Data.Sort.vGlom,2);              % Sorted ROI y coordinates
+%set point spread function using structure GaussForm
+PSF = fspecial('gaussian',GaussForm.A,GaussForm.Se);
+
+%% plot 3
+figure('position',[5 5 1500 1000]);
+for i=1:length(clusterS)
+    subplot(2,length(clusterS),i);
+%    Z = ChooseColor(ROI,T(:,i));
+    Z = ChooseColor2(T(:,i),i);
+    ZZ{i} = Z;
+    scatter(ROIx,ROIy,S,Z,'filled'), axis ij
+    set(gca,'Color','k');
+    set(gcf,'Color','w')
+    xlim([0 max(X)]);        
+    ylim([0 max(Y)])
+    im=getframe;
+    ClustImage= frame2im(im);    %Return associated image data Truecolor system
+    ClustImageBlurred = imfilter(ClustImage,PSF,'circular','conv');
+    title({PlotTitle;strcat('Hierarchical Cluster/',M.Project.Folder)},'FontSize',tFS);
+    
+    subplot(2,length(clusterS),length(clusterS)+i);
+    imagesc(ClustImageBlurred);
+end
+MakeColorConsistent(hden{1},ZZ{1});        
+MakeColorConsistent(hden{2},ZZ{2});        
+MakeColorConsistent(hden{3},ZZ{3});        
+
+

@@ -1,0 +1,24 @@
+function M = RearrangeROI(M,OrderMethod)
+%% modified by Elden Yu @ 7/16/2010
+
+ROI = ROI2apml(M.Data.ROI,M.Project.ROI);
+
+%% rearrange
+switch OrderMethod
+    case 1
+        [n ind]=sortrows(ROI,[2 1]);
+    case 2
+        [n ind]=sort(ROI(:,2));
+    case 3
+        [n ind]=sort(ROI(:,2),'descend');
+    case 4
+        [n ind]=sort(ROI(:,1));
+    case 5
+        [n ind]=sort(ROI(:,1),'descend');
+    case 6
+        ind = (1:M.Data.G)';
+end
+
+M.Data.Sort.ROIapml = ROI;
+M.Data.Sort.rGlom = ind;
+M.Data.Sort.vGlom=M.Data.Sort.rGlom(M.Data.Sort.aGlom(M.Data.Sort.rGlom));
